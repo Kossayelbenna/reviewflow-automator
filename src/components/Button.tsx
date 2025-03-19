@@ -44,7 +44,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <motion.button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
-        whileTap={{ scale: 0.97 }}
+        // Fixed: removed the whileTap property from here to avoid the error
+        // and use CSS for the tap effect instead
         {...props}
       >
         {isLoading && (

@@ -1,158 +1,221 @@
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
-import { Button } from "@/components/Button";
-import { Card, CardContent, CardTitle } from "@/components/Card";
-import { Search, Filter, ArrowDownUp, Star, Plus, Trash2, Edit, MoreHorizontal, CheckCircle, AlertCircle, Clock } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PageTransition from "@/components/PageTransition";
+import { Card, CardContent, CardTitle } from "@/components/Card";
+import { Button } from "@/components/Button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Search, Filter, AlertCircle, Star, Plus, RefreshCw, PenTool, MoreHorizontal, Check, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
-// Sample data
+// Sample data for reviews
 const sampleReviews = [
-  { 
-    id: "r1", 
-    business: "Café Parisien", 
-    content: "J'ai découvert ce café la semaine dernière et je suis déjà conquis ! L'ambiance est chaleureuse, le personnel attentionné et les pâtisseries sont simplement divines. Le café est torréfié sur place, ce qui lui donne un arôme incomparable. Je recommande particulièrement leur pain au chocolat qui est le meilleur que j'ai jamais goûté.", 
-    rating: 5, 
-    platform: "Google", 
-    status: "published", 
-    date: "2023-10-15",
-    author: "Marie L."
+  {
+    id: "rev1",
+    businessName: "Restaurant Le Gourmet",
+    platform: "Google",
+    rating: 5,
+    content: "Un service impeccable et une cuisine raffinée. Je recommande vivement le plat signature du chef, une vraie explosion de saveurs !",
+    status: "published",
+    date: "2023-10-15T14:30:00",
+    author: "Marie Dubois",
+    accountId: "a1"
   },
-  { 
-    id: "r2", 
-    business: "Tech Solutions", 
-    content: "Service client exceptionnel. Mon problème a été résolu en moins de 30 minutes par un technicien très compétent et sympathique. Le tarif était raisonnable et transparent. Je n'hésiterai pas à faire appel à eux pour mes futurs besoins informatiques.", 
-    rating: 4, 
-    platform: "Trustpilot", 
-    status: "published", 
-    date: "2023-10-14",
-    author: "Thomas M."
+  {
+    id: "rev2",
+    businessName: "Tech Solutions",
+    platform: "Trustpilot",
+    rating: 4,
+    content: "Très satisfait du service client qui a résolu mon problème rapidement. Seul bémol, le temps d'attente initial était un peu long.",
+    status: "pending",
+    date: "2023-10-16T10:15:00",
+    author: "Jean Martin",
+    accountId: "a2"
   },
-  { 
-    id: "r3", 
-    business: "Fleuriste Élégance", 
-    content: "J'ai commandé un bouquet pour l'anniversaire de ma mère et le résultat était magnifique ! Les fleurs étaient fraîches et l'arrangement très élégant. La livraison a été effectuée à l'heure prévue. Un grand merci pour avoir contribué à rendre cette journée spéciale.", 
-    rating: 5, 
-    platform: "Google", 
-    status: "published", 
-    date: "2023-10-13",
-    author: "Sophie D."
+  {
+    id: "rev3",
+    businessName: "Boutique Mode",
+    platform: "Google",
+    rating: 5,
+    content: "Excellent choix de vêtements et personnel très attentionné. Les prix sont raisonnables pour la qualité proposée.",
+    status: "published",
+    date: "2023-10-14T16:45:00",
+    author: "Sophie Leroy",
+    accountId: "a1"
   },
-  { 
-    id: "r4", 
-    business: "Auto Express", 
-    content: "J'ai fait réviser ma voiture chez Auto Express. Le service était bon mais les tarifs sont un peu élevés comparés à d'autres garages de la région. Le travail a été bien fait cependant, et ils m'ont proposé un véhicule de prêt pendant la durée des réparations.", 
-    rating: 3, 
-    platform: "Trustpilot", 
-    status: "pending", 
-    date: "2023-10-12",
-    author: "Pierre B."
+  {
+    id: "rev4",
+    businessName: "Auto Repair Shop",
+    platform: "Trustpilot",
+    rating: 3,
+    content: "Service correct mais délais un peu longs. La qualité du travail est néanmoins au rendez-vous.",
+    status: "rejected",
+    date: "2023-10-13T09:30:00",
+    author: "Pierre Moreau",
+    accountId: "a3"
   },
-  { 
-    id: "r5", 
-    business: "Spa Sérénité", 
-    content: "Une expérience relaxante du début à la fin. Le massage aux pierres chaudes était parfait après une semaine stressante. L'ambiance zen et le professionnalisme des praticiens font de cet endroit une véritable bulle de détente. Je reviendrai très bientôt !", 
-    rating: 5, 
-    platform: "Google", 
-    status: "published", 
-    date: "2023-10-11",
-    author: "Julie F."
+  {
+    id: "rev5",
+    businessName: "Restaurant Le Gourmet",
+    platform: "Google",
+    rating: 4,
+    content: "Bonne expérience globale. La nourriture était délicieuse mais l'ambiance un peu bruyante.",
+    status: "published",
+    date: "2023-10-12T20:15:00",
+    author: "Claire Blanc",
+    accountId: "a4"
   },
+  {
+    id: "rev6",
+    businessName: "Tech Solutions",
+    platform: "Google",
+    rating: 5,
+    content: "Excellente entreprise, service client au top et produits de qualité. Je suis client depuis 3 ans et je n'ai jamais été déçu.",
+    status: "pending",
+    date: "2023-10-17T11:00:00",
+    author: "Thomas Petit",
+    accountId: "a5"
+  }
 ];
 
-// Component for displaying reviews
-const ReviewCard = ({ review, onEdit, onDelete }) => {
+// Review Item Component
+const ReviewItem = ({ review, onPublish, onReject }) => {
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "published":
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
+      case "rejected":
+        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300";
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case "published": return "Publié";
+      case "pending": return "En attente";
+      case "rejected": return "Rejeté";
+      default: return status;
+    }
+  };
+
   return (
-    <div className="p-6 border border-gray-100 dark:border-gray-800 rounded-xl bg-white dark:bg-gray-800 shadow-sm transition-all hover:shadow-md">
-      <div className="flex justify-between items-start mb-4">
-        <Badge variant="outline" className="px-2.5 py-1">
-          {review.platform}
-        </Badge>
-        
-        <div className="flex items-center gap-1">
-          {review.status === "published" ? (
-            <CheckCircle className="h-4 w-4 text-green-500" />
-          ) : review.status === "pending" ? (
-            <Clock className="h-4 w-4 text-yellow-500" />
-          ) : (
-            <AlertCircle className="h-4 w-4 text-red-500" />
-          )}
+    <Card className="h-full">
+      <CardContent className="p-0">
+        <div className="p-6">
+          <div className="flex justify-between items-start mb-4">
+            <Badge variant="outline" className={`px-2 py-1 capitalize ${getStatusColor(review.status)}`}>
+              {getStatusText(review.status)}
+            </Badge>
+            
+            <div className="flex items-center">
+              <Badge variant="outline" className="mr-2">{review.platform}</Badge>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <MoreHorizontal className="h-5 w-5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <PenTool className="h-4 w-4 mr-2 text-blue-500" />
+                    Modifier
+                  </DropdownMenuItem>
+                  {review.status === "pending" && (
+                    <>
+                      <DropdownMenuItem onClick={() => onPublish(review)}>
+                        <Check className="h-4 w-4 mr-2 text-green-500" />
+                        Publier
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onReject(review)}>
+                        <X className="h-4 w-4 mr-2 text-red-500" />
+                        Rejeter
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {review.status === "rejected" && (
+                    <DropdownMenuItem onClick={() => onPublish(review)}>
+                      <RefreshCw className="h-4 w-4 mr-2 text-blue-500" />
+                      Réessayer
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
           
-          <span className="text-xs font-medium mr-2 capitalize">
-            {review.status === "published" ? "Publié" : review.status === "pending" ? "En attente" : "Échec"}
-          </span>
+          <div className="mb-3">
+            <h3 className="text-base font-semibold">{review.businessName}</h3>
+            <div className="flex items-center">
+              <div className="flex text-yellow-400 mr-2">
+                {[...Array(5)].map((_, i) => (
+                  <Star 
+                    key={i} 
+                    className={`h-4 w-4 ${i < review.rating ? 'fill-current' : 'text-gray-300 dark:text-gray-600'}`} 
+                  />
+                ))}
+              </div>
+              <span className="text-sm text-gray-500">{review.author}</span>
+            </div>
+          </div>
           
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                <MoreHorizontal className="h-4 w-4" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => onEdit(review)}>
-                <Edit className="h-4 w-4 mr-2" />
-                Modifier
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onDelete(review)} className="text-red-500 focus:text-red-500">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Supprimer
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <p className="text-gray-700 dark:text-gray-300 text-sm mb-4">
+            {review.content}
+          </p>
+          
+          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+            <span>Compte: {review.accountId}</span>
+            <span>
+              {new Date(review.date).toLocaleDateString('fr-FR', { 
+                day: 'numeric', 
+                month: 'short', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+              })}
+            </span>
+          </div>
         </div>
-      </div>
-      
-      <h3 className="text-lg font-semibold mb-2">{review.business}</h3>
-      
-      <div className="flex gap-1 mb-3">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Star
-            key={i}
-            className={`h-4 w-4 ${
-              i < review.rating
-                ? "text-yellow-400 fill-current"
-                : "text-gray-300 dark:text-gray-600"
-            }`}
-          />
-        ))}
-      </div>
-      
-      <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-        {review.content}
-      </p>
-      
-      <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
-        <span>Par {review.author}</span>
-        <span>
-          {new Date(review.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-        </span>
-      </div>
-    </div>
+        
+        {review.status === "pending" && (
+          <div className="border-t border-gray-100 dark:border-gray-800 p-3 bg-gray-50 dark:bg-gray-900/50 flex justify-between items-center">
+            <Button variant="outline" size="sm" onClick={() => onReject(review)} className="text-xs h-8">
+              <X className="h-3 w-3 mr-1" />
+              Rejeter
+            </Button>
+            <Button variant="default" size="sm" onClick={() => onPublish(review)} className="text-xs h-8">
+              <Check className="h-3 w-3 mr-1" />
+              Publier
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
 const Reviews = () => {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
-  const [isAddingReview, setIsAddingReview] = useState(false);
-  const [editingReview, setEditingReview] = useState(null);
-  const [isViewingDetails, setIsViewingDetails] = useState(false);
-  const [selectedReview, setSelectedReview] = useState(null);
+  const [isGeneratingReview, setIsGeneratingReview] = useState(false);
+  const [reviewsData, setReviewsData] = useState(sampleReviews);
   
   // Filter reviews based on search query and active tab
-  const filteredReviews = sampleReviews.filter((review) => {
+  const filteredReviews = reviewsData.filter((review) => {
     const matchesSearch = 
-      review.business.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      review.businessName.toLowerCase().includes(searchQuery.toLowerCase()) || 
       review.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
       review.author.toLowerCase().includes(searchQuery.toLowerCase());
     
@@ -160,27 +223,55 @@ const Reviews = () => {
       activeTab === "all" || 
       (activeTab === "published" && review.status === "published") ||
       (activeTab === "pending" && review.status === "pending") ||
-      (activeTab === "failed" && review.status === "failed");
+      (activeTab === "rejected" && review.status === "rejected");
     
     return matchesSearch && matchesTab;
   });
 
-  const handleEditReview = (review) => {
-    setEditingReview(review);
-    setIsAddingReview(true);
+  const handlePublishReview = (review) => {
+    setReviewsData(prevReviews => 
+      prevReviews.map(r => 
+        r.id === review.id ? {...r, status: "published"} : r
+      )
+    );
+    toast({
+      title: "Avis publié",
+      description: `L'avis pour ${review.businessName} a été publié avec succès.`,
+    });
   };
 
-  const handleDeleteReview = (review) => {
-    // In a real application, you would delete the review from your backend
-    console.log("Deleting review:", review.id);
+  const handleRejectReview = (review) => {
+    setReviewsData(prevReviews => 
+      prevReviews.map(r => 
+        r.id === review.id ? {...r, status: "rejected"} : r
+      )
+    );
+    toast({
+      title: "Avis rejeté",
+      description: `L'avis pour ${review.businessName} a été rejeté.`,
+      variant: "destructive"
+    });
+  };
+
+  const handleGenerateReview = () => {
+    setIsGeneratingReview(false);
+    const newReview = {
+      id: `rev${reviewsData.length + 1}`,
+      businessName: "Restaurant Le Gourmet", // Cette valeur serait sélectionnée dans le formulaire
+      platform: "Google", // Cette valeur serait sélectionnée dans le formulaire
+      rating: 5,
+      content: "J'ai eu l'occasion de dîner dans ce restaurant et j'ai été impressionné par la qualité du service et la finesse des plats. Une véritable découverte gastronomique que je recommande vivement !",
+      status: "pending",
+      date: new Date().toISOString(),
+      author: "Nouveau Utilisateur",
+      accountId: "a1"
+    };
     
-    // For demo purposes, we'll just log it
-    alert(`Le commentaire pour ${review.business} serait supprimé dans une application réelle.`);
-  };
-
-  const handleViewDetails = (review) => {
-    setSelectedReview(review);
-    setIsViewingDetails(true);
+    setReviewsData(prevReviews => [...prevReviews, newReview]);
+    toast({
+      title: "Avis généré",
+      description: "Un nouvel avis a été généré avec succès et est en attente de publication.",
+    });
   };
 
   return (
@@ -193,16 +284,13 @@ const Reviews = () => {
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Avis</h1>
               <p className="text-gray-500 dark:text-gray-400 mt-1">
-                Gérez et surveillez tous vos avis
+                Générez et gérez vos avis sur Google et Trustpilot
               </p>
             </div>
             
-            <Button onClick={() => {
-              setEditingReview(null);
-              setIsAddingReview(true);
-            }}>
+            <Button onClick={() => setIsGeneratingReview(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Créer un avis
+              Générer un avis
             </Button>
           </div>
           
@@ -220,149 +308,192 @@ const Reviews = () => {
                 </div>
                 
                 <div className="flex gap-2">
+                  <Select defaultValue="recent">
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Trier par" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="recent">Plus récents</SelectItem>
+                      <SelectItem value="oldest">Plus anciens</SelectItem>
+                      <SelectItem value="rating-high">Note ↑</SelectItem>
+                      <SelectItem value="rating-low">Note ↓</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
                   <Button variant="outline" size="icon">
                     <Filter className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon">
-                    <ArrowDownUp className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
             </CardContent>
           </Card>
           
+          <div className="flex flex-col md:flex-row gap-6 mb-8">
+            <Card className="flex-grow" delay={0.3}>
+              <CardContent className="p-6 flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/30 mr-4">
+                    <Check className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Avis publiés</p>
+                    <h3 className="text-2xl font-bold">
+                      {reviewsData.filter(r => r.status === "published").length}
+                    </h3>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm">
+                  Voir
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card className="flex-grow" delay={0.4}>
+              <CardContent className="p-6 flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900/30 mr-4">
+                    <AlertCircle className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">En attente</p>
+                    <h3 className="text-2xl font-bold">
+                      {reviewsData.filter(r => r.status === "pending").length}
+                    </h3>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm">
+                  Gérer
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card className="flex-grow" delay={0.5}>
+              <CardContent className="p-6 flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/30 mr-4">
+                    <Star className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Note moyenne</p>
+                    <h3 className="text-2xl font-bold">4.6</h3>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm">
+                  Analyse
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+          
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
             <TabsList>
-              <TabsTrigger value="all">Tous les avis</TabsTrigger>
+              <TabsTrigger value="all">Tous</TabsTrigger>
               <TabsTrigger value="published">Publiés</TabsTrigger>
               <TabsTrigger value="pending">En attente</TabsTrigger>
-              <TabsTrigger value="failed">Échecs</TabsTrigger>
+              <TabsTrigger value="rejected">Rejetés</TabsTrigger>
             </TabsList>
           </Tabs>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredReviews.length > 0 ? (
               filteredReviews.map((review, index) => (
-                <motion.div
+                <ReviewItem
                   key={review.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
-                  <ReviewCard
-                    review={review}
-                    onEdit={handleEditReview}
-                    onDelete={handleDeleteReview}
-                  />
-                </motion.div>
+                  review={review}
+                  onPublish={handlePublishReview}
+                  onReject={handleRejectReview}
+                />
               ))
             ) : (
               <div className="col-span-full text-center py-12">
                 <p className="text-gray-500 dark:text-gray-400">
-                  Aucun avis trouvé pour cette recherche.
+                  Aucun avis trouvé correspondant à votre recherche.
                 </p>
               </div>
             )}
           </div>
         </main>
         
-        {/* Add/Edit Review Dialog */}
-        <Dialog open={isAddingReview} onOpenChange={setIsAddingReview}>
-          <DialogContent className="sm:max-w-lg">
+        {/* Generate Review Dialog */}
+        <Dialog open={isGeneratingReview} onOpenChange={setIsGeneratingReview}>
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>{editingReview ? "Modifier un avis" : "Créer un nouvel avis"}</DialogTitle>
+              <DialogTitle>Générer un nouvel avis</DialogTitle>
               <DialogDescription>
-                {editingReview 
-                  ? "Modifiez les détails de l'avis existant." 
-                  : "Remplissez les informations pour créer un nouvel avis."}
+                Sélectionnez une entreprise et une plateforme pour générer un avis.
               </DialogDescription>
             </DialogHeader>
             
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="business">Entreprise</Label>
-                <Select defaultValue={editingReview?.business || ""}>
-                  <SelectTrigger>
+                <Select defaultValue="restaurant">
+                  <SelectTrigger id="business">
                     <SelectValue placeholder="Sélectionner une entreprise" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Café Parisien">Café Parisien</SelectItem>
-                    <SelectItem value="Tech Solutions">Tech Solutions</SelectItem>
-                    <SelectItem value="Fleuriste Élégance">Fleuriste Élégance</SelectItem>
-                    <SelectItem value="Auto Express">Auto Express</SelectItem>
-                    <SelectItem value="Spa Sérénité">Spa Sérénité</SelectItem>
+                    <SelectItem value="restaurant">Restaurant Le Gourmet</SelectItem>
+                    <SelectItem value="tech">Tech Solutions</SelectItem>
+                    <SelectItem value="boutique">Boutique Mode</SelectItem>
+                    <SelectItem value="auto">Auto Repair Shop</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="platform">Plateforme</Label>
-                <Select defaultValue={editingReview?.platform || "Google"}>
-                  <SelectTrigger>
+                <Select defaultValue="google">
+                  <SelectTrigger id="platform">
                     <SelectValue placeholder="Sélectionner une plateforme" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Google">Google</SelectItem>
-                    <SelectItem value="Trustpilot">Trustpilot</SelectItem>
-                    <SelectItem value="Yelp">Yelp</SelectItem>
-                    <SelectItem value="TripAdvisor">TripAdvisor</SelectItem>
-                    <SelectItem value="Facebook">Facebook</SelectItem>
+                    <SelectItem value="google">Google</SelectItem>
+                    <SelectItem value="trustpilot">Trustpilot</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="rating">Note</Label>
-                <Select defaultValue={editingReview?.rating.toString() || "5"}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner une note" />
+                <div className="flex items-center">
+                  {[1, 2, 3, 4, 5].map(value => (
+                    <button key={value} className="p-1">
+                      <Star className="h-6 w-6 text-yellow-400 fill-current" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="tone">Ton de l'avis</Label>
+                <Select defaultValue="positive">
+                  <SelectTrigger id="tone">
+                    <SelectValue placeholder="Sélectionner un ton" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="5">5 étoiles</SelectItem>
-                    <SelectItem value="4">4 étoiles</SelectItem>
-                    <SelectItem value="3">3 étoiles</SelectItem>
-                    <SelectItem value="2">2 étoiles</SelectItem>
-                    <SelectItem value="1">1 étoile</SelectItem>
+                    <SelectItem value="positive">Positif</SelectItem>
+                    <SelectItem value="neutral">Neutre</SelectItem>
+                    <SelectItem value="mixed">Mitigé</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="author">Nom de l'auteur</Label>
-                <Input id="author" defaultValue={editingReview?.author || ""} placeholder="Ex: Marie L." />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="content">Contenu de l'avis</Label>
-                <textarea
-                  id="content"
-                  className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  placeholder="Écrivez votre avis ici..."
-                  defaultValue={editingReview?.content || ""}
-                ></textarea>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="status">Statut</Label>
-                <Select defaultValue={editingReview?.status || "pending"}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner un statut" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="published">Publié</SelectItem>
-                    <SelectItem value="pending">En attente</SelectItem>
-                    <SelectItem value="failed">Échec</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="specificPoints">Points spécifiques à mentionner (optionnel)</Label>
+                <Textarea 
+                  id="specificPoints" 
+                  placeholder="Entrez des points spécifiques que vous souhaitez voir dans l'avis..." 
+                  className="resize-none" 
+                />
               </div>
             </div>
             
             <DialogFooter className="flex flex-col sm:flex-row gap-2">
-              <Button variant="outline" onClick={() => setIsAddingReview(false)}>
+              <Button variant="outline" onClick={() => setIsGeneratingReview(false)}>
                 Annuler
               </Button>
-              <Button type="submit" onClick={() => setIsAddingReview(false)}>
-                {editingReview ? "Mettre à jour" : "Créer"}
+              <Button type="submit" onClick={handleGenerateReview}>
+                Générer l'avis
               </Button>
             </DialogFooter>
           </DialogContent>

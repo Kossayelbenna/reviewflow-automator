@@ -47,16 +47,25 @@ export function Card({ children, className, variant = "default", hover = false, 
     className
   );
 
+  // Fixed the duplicate variants property by merging the animation variants conditionally
+  const combinedVariants = hover 
+    ? { 
+        hidden: { ...cardVariants.hidden },
+        visible: cardVariants.visible,
+        initial: hoverVariants.initial,
+        hover: hoverVariants.hover
+      } 
+    : cardVariants;
+
   return (
     <motion.div
       className={baseClasses}
-      variants={cardVariants}
+      variants={combinedVariants}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true }}
       custom={delay}
       whileHover={hover ? "hover" : undefined}
-      variants={hover ? { ...cardVariants, ...hoverVariants } : cardVariants}
     >
       {children}
     </motion.div>
