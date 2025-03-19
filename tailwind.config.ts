@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -84,11 +85,64 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				fadeIn: {
+					from: { opacity: '0' },
+					to: { opacity: '1' }
+				},
+				fadeOut: {
+					from: { opacity: '1' },
+					to: { opacity: '0' }
+				},
+				slideInFromLeft: {
+					'0%': { transform: 'translateX(-100%)' },
+					'100%': { transform: 'translateX(0)' }
+				},
+				slideInFromRight: {
+					'0%': { transform: 'translateX(100%)' },
+					'100%': { transform: 'translateX(0)' }
+				},
+				slideInFromTop: {
+					'0%': { transform: 'translateY(-100%)' },
+					'100%': { transform: 'translateY(0)' }
+				},
+				slideInFromBottom: {
+					'0%': { transform: 'translateY(100%)' },
+					'100%': { transform: 'translateY(0)' }
+				},
+				float: {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' }
+				},
+				pulse: {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.5' }
+				},
+				shimmer: {
+					'0%': { backgroundPosition: '-200% 0' },
+					'100%': { backgroundPosition: '200% 0' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fadeIn 0.5s ease-in-out',
+				'fade-out': 'fadeOut 0.5s ease-in-out',
+				'slide-in-from-left': 'slideInFromLeft 0.5s ease-out',
+				'slide-in-from-right': 'slideInFromRight 0.5s ease-out',
+				'slide-in-from-top': 'slideInFromTop 0.5s ease-out',
+				'slide-in-from-bottom': 'slideInFromBottom 0.5s ease-out',
+				'float': 'float 6s ease-in-out infinite',
+				'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+				'shimmer': 'shimmer 2s infinite linear'
+			},
+			backdropFilter: {
+				'none': 'none',
+				'blur': 'blur(20px)'
+			},
+			fontFamily: {
+				sans: ['Inter var', 'sans-serif'],
+				display: ['SF Pro Display', 'Inter var', 'sans-serif']
 			}
 		}
 	},
