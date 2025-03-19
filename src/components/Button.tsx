@@ -1,7 +1,7 @@
 
 import { cn } from '@/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { motion } from 'framer-motion';
+import { motion, HTMLMotionProps } from 'framer-motion';
 import { ButtonHTMLAttributes, forwardRef } from 'react';
 
 const buttonVariants = cva(
@@ -38,15 +38,20 @@ export interface ButtonProps
   isLoading?: boolean;
 }
 
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+// Create a type that omits event handlers that conflict between HTMLButtonElement and motion component
+type ButtonPropsWithoutEventHandlers = Omit<ButtonProps, 
+  'onDrag' | 'onDragStart' | 'onDragEnd' | 'onAnimationStart' | 'onAnimationComplete'
+>;
+
+const Button = forwardRef<HTMLButtonElement, ButtonPropsWithoutEventHandlers>(
   ({ className, variant, size, isLoading, ...props }, ref) => {
     return (
       <motion.button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
-        // Fixed: removed the whileTap property from here to avoid the error
-        // and use CSS for the tap effect instead
-        {...props}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        {...props as any} // Use type assertion to bypass TS checks for event handler conflicts
       >
         {isLoading && (
           <svg
