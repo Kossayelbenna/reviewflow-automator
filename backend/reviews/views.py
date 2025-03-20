@@ -1,4 +1,3 @@
-
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -8,6 +7,8 @@ from .models import Business, Review
 from .serializers import BusinessSerializer, ReviewSerializer, ReviewCreateSerializer
 from .services.ai_service import generate_review_content
 from .services.scheduler import scheduler
+import asyncio
+from .test_utils import run_test_cycle, generate_compliance_report
 
 
 class BusinessViewSet(viewsets.ModelViewSet):
@@ -137,3 +138,53 @@ class SubmitReviewsView(APIView):
             'review_ids': reviews,
             'errors': errors
         })
+
+
+class TestSystemView(APIView):
+    """
+    API endpoint for testing the review automation system
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, format=None):
+        business_id = request.data.get('business_id')
+        platform = request.data.get('platform', 'google')
+        count = int(request.data.get('count', 1))
+        
+        if count > 10:
+            return Response(
+                {'error': 'For testing, count must be 10 or less'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Run the test cycle asynchronously
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        try:
+            results = loop.run_until_complete(run_test_cycle(business_id, platform, count))
+            return Response(results)
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        finally:
+            loop.close()
+
+
+class ComplianceReportView(APIView):
+    """
+    API endpoint for generating compliance reports
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, format=None):
+        try:
+            report = generate_compliance_report()
+            return Response(report)
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
